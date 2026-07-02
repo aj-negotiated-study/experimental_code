@@ -1,24 +1,52 @@
-'''The model. This is going to be the logic that receives weather updates. I have set up the model
-as an observer in the observer pattern, which simulates it being the logic connected to a weather
-API'''
-from abc import ABC, abstractmethod
-# from .controller import WeatherCategorisation
+'''The model holds the data for the weather. This would typically be an API
+endpoint. To simulate this, there is a simple dictionary and a constant loop
+which updates weather states.'''
+import random
 
 
-class Observer(ABC):
-    @abstractmethod
-    def update(self, message: str, location: str, critical: bool = False):
-        """Called by the subject when an event occurs. Must be
-        implemented by subclasses."""
-        pass
+class Model:
+    def __init__(self):
+        self.observers = []
+        self.weather_states = {"London": "Sunny",
+                               "Birmingham": "Raining",
+                               "Manchester": "Ice",
+                               "Leeds": "Sunny",
+                               "Sheffield": "Raining",
+                               "Hatfield": "Foggy",
+                               "Bristol": "Snowing"}
 
+        self.weather_options = ["Sunny", "Raining", "Cloudy"]
+        self.critical_weather = ["Ice", "Snowing", "Foggy"]
+        self.critical = False
 
-class ModelWeatherObserver(Observer):
-    def update(self, message: str, location: str, critical: bool = False):
-            summary = (f"Weather update: {message}")
-            criticality = critical
-            if critical:
-                location = (f"Please be careful in {location}")
-            else:
-                location = (f"Have a lovely day in {location}")
+    def update_weather(self):
+        random_city = random.choice(list(self.weather_states.keys()))
+        weather_choices = self.weather_options + self.critical_weather
+        option_choice = random.choice(weather_choices)
+        self.weather_states[random_city] = option_choice
+        if option_choice in self.critical_weather:
+            self.critical = True
+        event = "Update: {random_city} updated to {option_choice}"
+        # Notify all observers
+        for observer in self.observers:
+            observer.update(event, self.critical)  # Now calls the method
 
+    def add_observer(self, obs):
+        if obs not in self.observers:
+            self.observers.append(obs)
+
+    def remove_observer(self, obs):
+        try:
+            self.observers.remove(obs)
+        except ValueError:
+            pass
+    
+    def get_locations(self):
+        """Returns the list of locations for the dropdown."""
+        return list(self.weather_states.keys())
+
+    def get_weather_for(self, location):
+        for key, value in self.weather_states.items():
+            if key == location:
+                state = value
+        return state

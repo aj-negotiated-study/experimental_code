@@ -1,1 +1,0 @@
-# Package for MVC design pattern
